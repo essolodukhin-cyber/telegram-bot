@@ -1,7 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"os/signal"
 	"strconv"
@@ -23,7 +25,7 @@ func main() {
 	//botToken := "8437986859:AAHRZcu3gc3kn5cHAoV1Xn2WtHrylxIT9p4"
 	chatID, err := strconv.ParseInt(envChatID, 10, 0)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("Не смогли получить переменную окружения ChatID. Ошибка %v", err)
 	}
 	//chatID := int64(-1002880878621)
 
@@ -69,4 +71,15 @@ func main() {
 	// Останавливаем планировщик перед выходом
 	c.Stop()
 	log.Println("Бот завершает работу")
+
+	resp, err := http.Get("http://rzhunemogu.ru/RandJSON.aspx?CType=11")
+	if err != nil {
+		log.Fatalf("Не смогли получить шутку. Ошибка %v", err)
+	}
+	anekdot := tgbotapi.NewMessage(chatID, fmt.Sprintf("Пока броните вот вам анекдот: %v", resp))
+	if _, err = bot.Send(anekdot); err != nil {
+		log.Println("Ошибка отправки анекдота:", err)
+	} else {
+		log.Println("Анекдот отправлен!")
+	}
 }
