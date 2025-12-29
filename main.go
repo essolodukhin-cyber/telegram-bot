@@ -2,14 +2,16 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"strconv"
+	"strings"
 	"syscall"
 
-	"github.com/go-telegram-bot-api/telegram-bot-api"
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 	"github.com/robfig/cron/v3"
 )
 
@@ -76,7 +78,23 @@ func main() {
 	if err != nil {
 		log.Fatalf("Не смогли получить шутку. Ошибка %v", err)
 	}
-	anekdot := tgbotapi.NewMessage(chatID, fmt.Sprintf("Пока броните вот вам анекдот: %v", resp))
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Println("Ошибка при чтении:", err)
+		return
+	}
+
+	// Простая обработка ответа без использования json.Unmarshal
+	content := string(body)
+	content = strings.TrimPrefix(content, `{"content":"`)
+	content = strings.TrimSuffix(content, `"}`)
+	content = strings.ReplaceAll(content, `\r\n`, "\n")
+
+	fmt.Println(content)
+
+	anekdot := tgbotapi.NewMessage(chatID, fmt.Sprintf("Пока броните вот вам анекдот: %v", content))
 	if _, err = bot.Send(anekdot); err != nil {
 		log.Println("Ошибка отправки анекдота:", err)
 	} else {
