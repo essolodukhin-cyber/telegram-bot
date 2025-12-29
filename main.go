@@ -2,13 +2,10 @@ package main
 
 import (
 	"fmt"
-	"io"
 	"log"
-	"net/http"
 	"os"
 	"os/signal"
 	"strconv"
-	"strings"
 	"syscall"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
@@ -51,10 +48,16 @@ func main() {
 	// Добавляем задачу (каждую неделю в среду в 12:00)
 	_, err = c.AddFunc(cronTime, func() {
 		msg := tgbotapi.NewMessage(chatID, "Ало!Пора бронить будку!")
-		if _, err := bot.Send(msg); err != nil {
+		if _, err = bot.Send(msg); err != nil {
 			log.Println("Ошибка отправки сообщения:", err)
 		} else {
 			log.Println("Сообщение отправлено!")
+		}
+		anekdot := tgbotapi.NewMessage(chatID, fmt.Sprintf("Пока броните вот вам анекдот: %v", GetAnekdot()))
+		if _, err = bot.Send(anekdot); err != nil {
+			log.Println("Ошибка отправки анекдота:", err)
+		} else {
+			log.Println("Анекдот отправлен!")
 		}
 	})
 
@@ -73,31 +76,4 @@ func main() {
 	// Останавливаем планировщик перед выходом
 	c.Stop()
 	log.Println("Бот завершает работу")
-
-	resp, err := http.Get("http://rzhunemogu.ru/RandJSON.aspx?CType=11")
-	if err != nil {
-		log.Fatalf("Не смогли получить шутку. Ошибка %v", err)
-	}
-	defer resp.Body.Close()
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		fmt.Println("Ошибка при чтении:", err)
-		return
-	}
-
-	// Простая обработка ответа без использования json.Unmarshal
-	content := string(body)
-	content = strings.TrimPrefix(content, `{"content":"`)
-	content = strings.TrimSuffix(content, `"}`)
-	content = strings.ReplaceAll(content, `\r\n`, "\n")
-
-	fmt.Println(content)
-
-	anekdot := tgbotapi.NewMessage(chatID, fmt.Sprintf("Пока броните вот вам анекдот: %v", content))
-	if _, err = bot.Send(anekdot); err != nil {
-		log.Println("Ошибка отправки анекдота:", err)
-	} else {
-		log.Println("Анекдот отправлен!")
-	}
 }
