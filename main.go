@@ -14,7 +14,7 @@ import (
 var (
 	envBotToken = os.Getenv("BOTTOKEN")
 	envChatID   = os.Getenv("CHATID")
-	cronTime    = "* * * * *" //"0 12 * * 3" // Каждый среду (3) в 12:00
+	cronTime    = os.Getenv("CRONTIME") //"0 12 * * 3" // Каждый среду (3) в 12:00
 )
 
 func main() {
