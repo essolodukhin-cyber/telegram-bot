@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 
 	"github.com/go-telegram-bot-api/telegram-bot-api"
@@ -12,8 +13,13 @@ import (
 
 func main() {
 	// Токен бота
-	botToken := "8437986859:AAHRZcu3gc3kn5cHAoV1Xn2WtHrylxIT9p4" // Например: "8206421086:AAHysZGoynV-vDc6hepIfV1zLp6UvNh9t3I"
-	chatID := int64(-1002880878621)                              // ID чата (число, например, -925488365)
+	botToken := os.Getenv("BOTTOKEN")
+	//botToken := "8437986859:AAHRZcu3gc3kn5cHAoV1Xn2WtHrylxIT9p4" // Например: "8206421086:AAHysZGoynV-vDc6hepIfV1zLp6UvNh9t3I"
+	chatID, err := strconv.ParseInt(os.Getenv("CHATID"), 10, 0)
+	if err != nil {
+		log.Fatal(err)
+	}
+	//chatID := int64(-1002880878621) // ID чата (число, например, -925488365)
 
 	// Создаем экземпляр бота
 	bot, err := tgbotapi.NewBotAPI(botToken)
